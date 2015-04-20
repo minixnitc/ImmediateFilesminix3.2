@@ -16,9 +16,6 @@ static int rw_chunk(struct inode *rip, u64_t position, unsigned off,
 		size_t chunk, unsigned left, int rw_flag, cp_grant_id_t gid,
 		unsigned buf_off, unsigned int block_size, int *completed);
 
-int rw_immediate(struct inode *rip, unsigned off, size_t chunk, int rw_flag,
-		cp_grant_id_t gid, unsigned buf_off);
-
 /*===========================================================================*
  *				fs_readwrite				     *
  *===========================================================================*/
@@ -184,7 +181,6 @@ int fs_readwrite(void) {
 				IN_MARKDIRTY(rip);
 			}
 
-			//r = rw_immediate(rip, position, nrbytes, rw_flag, gid, cum_io);
 			if (r == OK) {
 				cum_io += nrbytes;
 				position += nrbytes;
@@ -283,21 +279,6 @@ int is_immeditate(rip)
 	return 0;
 }
 
-int rw_immediate(rip, off, chunk, rw_flag, gid, buf_off)
-	register struct inode *rip;unsigned off;unsigned int chunk;int rw_flag;cp_grant_id_t gid;unsigned buf_off; {
-	int r = OK;
-
-	if (rw_flag == READING) {
-		r = sys_safecopyto(VFS_PROC_NR, gid, (vir_bytes) buf_off,
-				(vir_bytes)(rip->i_zone + off), (size_t) chunk);
-	} else {
-		r = sys_safecopyfrom(VFS_PROC_NR, gid, (vir_bytes) buf_off,
-				(vir_bytes)(rip->i_zone + off), (size_t) chunk);
-		IN_MARKDIRTY(rip);
-	}
-
-	return (r);
-}
 
 /*===========================================================================*
  *				fs_breadwrite				     *
